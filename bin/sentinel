@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Load shared path resolution first
+# shellcheck source=../lib/paths.sh
+source "${PROJECT_ROOT}/lib/paths.sh"
+
+# Make sure expected directories exist before any engine runs
+sentinel_ensure_directories
+
+COMMAND="${1:-}"
+SUBCOMMAND="${2:-}"
+
+show_help() {
+    echo "Sapphire Sentinel"
+    echo "Usage:"
+    echo "  sentinel init"
+    echo "  sentinel start [mode] [context_type] [context_value]"
+    echo "  sentinel attach [context_type] [context_value]"
+    echo "  sentinel signal [command|error|note] [details]"
+    echo "  sentinel stop"
+    echo "  sentinel status"
+    echo "  sentinel sessions [--last|--today]"
+    echo "  sentinel story [--last|session_id]"
+    echo "  sentinel report day"
+    echo "  sentinel report week"
+    echo "  sentinel report month"
+    echo "  sentinel update"
+    echo "  sentinel help"
+    echo
+    echo "Mode: ${SENTINEL_MODE}"
+}
+
+run_engine() {
+    local engine_name="$1"
+    local engine_file="${SENTINEL_ENGINE_DIR}/${engine_name}"
+    shift || true
+
+    if [[ ! -x "$engine_file" ]]; then
+        echo "Engine missing or not executable: $engine_file"
+        exit 1
+    fi
+
+    "$engine_file" "$@"
+}
+
+case "$COMMAND" in
+    init)
+        run_engine "init.sh"
+        ;;
+    start)
+        shift || true
+        run_engine "start.sh" "$@"
+        ;;
+    attach)
+        shift || true
+        run_engine "attach.sh" "$@"
+        ;;
+    signal)
+        shift || true
+        run_engine "signal.sh" "$@"
+        ;;
+    stop)
+        run_engine "stop.sh"
+        ;;
+    status)
+        run_engine "status.sh"
+        ;;
+    sessions)
+        shift || true
+        run_engine "sessions.sh" "$@"
+        ;;
+    story)
+        shift || true
+        run_engine "story.sh" "$@"
+        ;;
+    report)
+        case "$SUBCOMMAND" in
+            day)
+                run_engine "report_day.sh"
+                ;;
+            week)
+                run_engine "report_week.sh"
+                ;;
+            month)
+                run_engine "report_month.sh"
+                ;;
+            *)
+                show_help
+                exit 1
+                ;;
+        esac
+        ;;
+    update)
+        run_engine "update.sh"
+        ;;
+    help|"")
+        show_help
+        ;;
+    *)
+        show_help
+        exit 1
+        ;;
+esac

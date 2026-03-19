@@ -1,0 +1,24 @@
+# ============================================================================
+# Sapphire Sentinel - Git Ignore
+# ============================================================================
+
+# Logs and runtime artifacts
+logs/*.log
+logs/runtime/*.session
+
+# Session/state artifacts created during local testing
+config/state/active_session
+config/state/sessions/*.session
+
+# Temporary and backup files
+*.tmp
+*.temp
+*.bak
+*~
+*.swp
+*.swo
+
+# Editor / OS metadata
+.directory
+.DS_Store
+Thumbs.db
