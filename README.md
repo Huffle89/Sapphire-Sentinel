@@ -1,5 +1,7 @@
 # Sapphire Sentinel
 
+![Sapphire Sentinel Logo](assets/logo.png)
+
 Sapphire Sentinel is a Linux-first terminal session intelligence platform built by Huffle’s IT Services LLC.
 
 Instead of acting like a simple command logger, Sentinel is designed to help reconstruct and explain real work sessions. It captures structured activity, preserves session context, and turns terminal work into readable operational history through session stories and reporting.
