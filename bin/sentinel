@@ -2,14 +2,19 @@
 
 set -u
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${SCRIPT_PATH}")" && pwd)"
 
-# Load shared path resolution first
-# shellcheck source=../lib/paths.sh
-source "${PROJECT_ROOT}/lib/paths.sh"
+if [[ "${SCRIPT_DIR}" == "/usr/local/bin" || "${SCRIPT_DIR}" == "/usr/bin" ]]; then
+    SENTINEL_APP_ROOT="/usr/local/lib/sapphire-sentinel"
+    # shellcheck source=/usr/local/lib/sapphire-sentinel/lib/paths.sh
+    source "${SENTINEL_APP_ROOT}/lib/paths.sh"
+else
+    PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+    # shellcheck source=../lib/paths.sh
+    source "${PROJECT_ROOT}/lib/paths.sh"
+fi
 
-# Make sure expected directories exist before any engine runs
 sentinel_ensure_directories
 
 COMMAND="${1:-}"

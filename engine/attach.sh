@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+source "${PROJECT_ROOT}/lib/paths.sh"
+
 set -u
 
 ENGINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -67,6 +71,7 @@ recovery_reason=$(printf '%q' "${recovery_reason}")
 integrity_status=$(printf '%q' "${integrity_status}")
 SESSION
 
+mkdir -p "$(dirname "${SENTINEL_ACTIVE_HISTORY_FILE}")"
 sentinel_append_history \
     "${SENTINEL_ACTIVE_HISTORY_FILE}" \
     "$(sentinel_timestamp)" \
