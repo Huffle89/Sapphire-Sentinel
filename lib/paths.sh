@@ -14,6 +14,10 @@
 SENTINEL_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SENTINEL_BASE_DIR="$(cd "${SENTINEL_LIB_DIR}/.." && pwd)"
 
+# Load config helpers
+# shellcheck source=../lib/config.sh
+source "${SENTINEL_BASE_DIR}/lib/config.sh"
+
 # ----------------------------------------------------------------------------
 # Mode detection
 # ----------------------------------------------------------------------------
@@ -44,6 +48,13 @@ if [[ "${SENTINEL_LAYOUT_MODE}" == "project" ]]; then
     SENTINEL_STATE_DIR="${SENTINEL_CONFIG_DIR}/state"
     SENTINEL_SESSION_ARCHIVE_DIR="${SENTINEL_STATE_DIR}/sessions"
 
+    sentinel_config_init_file
+    SENTINEL_STORAGE_ROOT="${SENTINEL_PROJECT_ROOT}"
+    sentinel_storage_root_override="$(sentinel_config_get storage_root 2>/dev/null || true)"
+    if [[ -n "${sentinel_storage_root_override:-}" ]]; then
+        SENTINEL_STORAGE_ROOT="${sentinel_storage_root_override}"
+    fi
+
 # ----------------------------------------------------------------------------
 # Installed mode paths
 # ----------------------------------------------------------------------------
@@ -61,6 +72,13 @@ else
     SENTINEL_DATA_DIR="/var/lib/sapphire-sentinel"
     SENTINEL_STATE_DIR="${SENTINEL_DATA_DIR}/state"
     SENTINEL_SESSION_ARCHIVE_DIR="${SENTINEL_STATE_DIR}/sessions"
+
+    sentinel_config_init_file
+    SENTINEL_STORAGE_ROOT="${SENTINEL_DATA_DIR}"
+    sentinel_storage_root_override="$(sentinel_config_get storage_root 2>/dev/null || true)"
+    if [[ -n "${sentinel_storage_root_override:-}" ]]; then
+        SENTINEL_STORAGE_ROOT="${sentinel_storage_root_override}"
+    fi
 fi
 
 # ----------------------------------------------------------------------------
@@ -115,6 +133,7 @@ export SENTINEL_LOG_DIR
 export SENTINEL_DATA_DIR
 export SENTINEL_STATE_DIR
 export SENTINEL_SESSION_ARCHIVE_DIR
+export SENTINEL_STORAGE_ROOT
 
 export SENTINEL_ACTIVE_SESSION_FILE
 export SENTINEL_ACTIVE_HISTORY_FILE
