@@ -4,155 +4,159 @@
 # Sapphire Sentinel
 # Shared path resolution
 # Supports:
-#   - project mode
-#   - installed mode
-# Includes compatibility aliases for current beta 2 engine/dispatcher scripts
+# - project mode -> run from repo checkout
+# - installed mode -> run from /usr/local/bin with system paths
 # ============================================================================
 
-# shellcheck disable=SC2034
-
+# ----------------------------------------------------------------------------
+# Detect where this file lives
+# ----------------------------------------------------------------------------
 SENTINEL_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SENTINEL_BASE_DIR="$(cd "${SENTINEL_LIB_DIR}/.." && pwd)"
-
-# Load config helpers
-# shellcheck source=../lib/config.sh
-source "${SENTINEL_BASE_DIR}/lib/config.sh"
+SENTINEL_PROJECT_ROOT="$(cd "${SENTINEL_LIB_DIR}/.." && pwd)"
 
 # ----------------------------------------------------------------------------
-# Mode detection
+# Environment override support
+# These allow manual forcing during testing or packaging.
 # ----------------------------------------------------------------------------
-if [[ -x "${SENTINEL_BASE_DIR}/bin/sentinel" && -d "${SENTINEL_BASE_DIR}/engine" ]]; then
-    SENTINEL_LAYOUT_MODE="project"
-else
-    SENTINEL_LAYOUT_MODE="installed"
+SENTINEL_FORCE_MODE="${SENTINEL_FORCE_MODE:-}"
+SENTINEL_INSTALL_PREFIX="${SENTINEL_INSTALL_PREFIX:-/usr/local}"
+SENTINEL_SYSTEM_CONFIG_DIR="${SENTINEL_SYSTEM_CONFIG_DIR:-/etc/sapphire-sentinel}"
+SENTINEL_SYSTEM_DATA_DIR="${SENTINEL_SYSTEM_DATA_DIR:-/var/lib/sapphire-sentinel}"
+SENTINEL_SYSTEM_LOG_DIR="${SENTINEL_SYSTEM_LOG_DIR:-/var/log/sapphire-sentinel}"
+
+# Optional explicit storage override from environment
+SENTINEL_STORAGE_ROOT_OVERRIDE="${SENTINEL_STORAGE_ROOT_OVERRIDE:-}"
+
+# ----------------------------------------------------------------------------
+# User config lookup
+# This is intentionally self-contained so paths can load storage_root early
+# without depending on lib/config.sh and creating a circular dependency.
+# ----------------------------------------------------------------------------
+SENTINEL_USER_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+SENTINEL_USER_CONFIG_DIR="${SENTINEL_USER_CONFIG_HOME}/sapphire-sentinel"
+SENTINEL_USER_CONFIG_FILE="${SENTINEL_USER_CONFIG_DIR}/config"
+
+sentinel_read_user_config_value() {
+    local key="$1"
+
+    [[ -f "${SENTINEL_USER_CONFIG_FILE}" ]] || return 1
+
+    awk -F'=' -v wanted="${key}" '
+        $1 == wanted {
+            print substr($0, index($0, "=") + 1)
+            exit
+        }
+    ' "${SENTINEL_USER_CONFIG_FILE}"
+}
+
+if [[ -z "${SENTINEL_STORAGE_ROOT_OVERRIDE}" ]]; then
+    SENTINEL_STORAGE_ROOT_OVERRIDE="$(sentinel_read_user_config_value storage_root 2>/dev/null || true)"
 fi
 
-# Legacy compatibility alias expected by older scripts
-SENTINEL_MODE="${SENTINEL_LAYOUT_MODE}"
+# ----------------------------------------------------------------------------
+# Path model detection
+# installed mode is assumed when running from a system lib path, or when forced
+# ----------------------------------------------------------------------------
+sentinel_detect_mode() {
+    if [[ -n "$SENTINEL_FORCE_MODE" ]]; then
+        printf '%s\n' "$SENTINEL_FORCE_MODE"
+        return
+    fi
+
+    case "$SENTINEL_LIB_DIR" in
+        /usr/local/lib/sapphire-sentinel/lib|/usr/lib/sapphire-sentinel/lib)
+            printf '%s\n' "installed"
+            ;;
+        *)
+            printf '%s\n' "project"
+            ;;
+    esac
+}
+
+SENTINEL_MODE="$(sentinel_detect_mode)"
 
 # ----------------------------------------------------------------------------
-# Project mode paths
+# Resolve paths by mode
 # ----------------------------------------------------------------------------
-if [[ "${SENTINEL_LAYOUT_MODE}" == "project" ]]; then
-    SENTINEL_PROJECT_ROOT="${SENTINEL_BASE_DIR}"
+if [[ "$SENTINEL_MODE" == "installed" ]]; then
+    SENTINEL_BIN_DIR="${SENTINEL_INSTALL_PREFIX}/bin"
+    SENTINEL_APP_DIR="${SENTINEL_INSTALL_PREFIX}/lib/sapphire-sentinel"
+    SENTINEL_ENGINE_DIR="${SENTINEL_APP_DIR}/engine"
+    SENTINEL_LIB_SHARED_DIR="${SENTINEL_APP_DIR}/lib"
+    SENTINEL_DOCS_DIR="${SENTINEL_APP_DIR}/docs"
+    SENTINEL_CONFIG_DIR="${SENTINEL_SYSTEM_CONFIG_DIR}"
 
+    if [[ -n "${SENTINEL_STORAGE_ROOT_OVERRIDE}" ]]; then
+        SENTINEL_STORAGE_ROOT="${SENTINEL_STORAGE_ROOT_OVERRIDE}"
+        SENTINEL_STATE_DIR="${SENTINEL_STORAGE_ROOT}/state"
+        SENTINEL_RUNTIME_DIR="${SENTINEL_STORAGE_ROOT}/logs/runtime"
+        SENTINEL_LOG_DIR="${SENTINEL_STORAGE_ROOT}/logs"
+    else
+        SENTINEL_STORAGE_ROOT="${SENTINEL_SYSTEM_DATA_DIR}"
+        SENTINEL_STATE_DIR="${SENTINEL_SYSTEM_DATA_DIR}/state"
+        SENTINEL_RUNTIME_DIR="${SENTINEL_SYSTEM_LOG_DIR}/runtime"
+        SENTINEL_LOG_DIR="${SENTINEL_SYSTEM_LOG_DIR}"
+    fi
+
+    SENTINEL_MAIN_LOG="${SENTINEL_LOG_DIR}/sentinel.log"
+    SENTINEL_ACTIVE_SESSION_FILE="${SENTINEL_STATE_DIR}/active_session"
+    SENTINEL_SESSION_ARCHIVE_DIR="${SENTINEL_STATE_DIR}/sessions"
+else
     SENTINEL_BIN_DIR="${SENTINEL_PROJECT_ROOT}/bin"
+    SENTINEL_APP_DIR="${SENTINEL_PROJECT_ROOT}"
     SENTINEL_ENGINE_DIR="${SENTINEL_PROJECT_ROOT}/engine"
     SENTINEL_LIB_SHARED_DIR="${SENTINEL_PROJECT_ROOT}/lib"
     SENTINEL_CONFIG_DIR="${SENTINEL_PROJECT_ROOT}/config"
     SENTINEL_DOCS_DIR="${SENTINEL_PROJECT_ROOT}/docs"
-    SENTINEL_LOG_DIR="${SENTINEL_PROJECT_ROOT}/logs"
 
-    # Writable state for project/dev mode
-    SENTINEL_DATA_DIR="${SENTINEL_CONFIG_DIR}"
-    SENTINEL_STATE_DIR="${SENTINEL_CONFIG_DIR}/state"
-    SENTINEL_SESSION_ARCHIVE_DIR="${SENTINEL_STATE_DIR}/sessions"
-
-    sentinel_config_init_file
-    SENTINEL_STORAGE_ROOT="${SENTINEL_PROJECT_ROOT}"
-    sentinel_storage_root_override="$(sentinel_config_get storage_root 2>/dev/null || true)"
-    if [[ -n "${sentinel_storage_root_override:-}" ]]; then
-        SENTINEL_STORAGE_ROOT="${sentinel_storage_root_override}"
+    if [[ -n "${SENTINEL_STORAGE_ROOT_OVERRIDE}" ]]; then
+        SENTINEL_STORAGE_ROOT="${SENTINEL_STORAGE_ROOT_OVERRIDE}"
+        SENTINEL_STATE_DIR="${SENTINEL_STORAGE_ROOT}/state"
+        SENTINEL_RUNTIME_DIR="${SENTINEL_STORAGE_ROOT}/logs/runtime"
+        SENTINEL_LOG_DIR="${SENTINEL_STORAGE_ROOT}/logs"
+    else
+        SENTINEL_STORAGE_ROOT="${SENTINEL_PROJECT_ROOT}"
+        SENTINEL_STATE_DIR="${SENTINEL_CONFIG_DIR}/state"
+        SENTINEL_RUNTIME_DIR="${SENTINEL_PROJECT_ROOT}/logs/runtime"
+        SENTINEL_LOG_DIR="${SENTINEL_PROJECT_ROOT}/logs"
     fi
 
-# ----------------------------------------------------------------------------
-# Installed mode paths
-# ----------------------------------------------------------------------------
-else
-    SENTINEL_INSTALL_ROOT="${SENTINEL_BASE_DIR}"
-
-    SENTINEL_BIN_DIR="/usr/local/bin"
-    SENTINEL_ENGINE_DIR="${SENTINEL_INSTALL_ROOT}/engine"
-    SENTINEL_LIB_SHARED_DIR="${SENTINEL_INSTALL_ROOT}/lib"
-    SENTINEL_CONFIG_DIR="/etc/sapphire-sentinel"
-    SENTINEL_DOCS_DIR="${SENTINEL_INSTALL_ROOT}/docs"
-    SENTINEL_LOG_DIR="/var/log/sapphire-sentinel"
-
-    # Writable system state
-    SENTINEL_DATA_DIR="/var/lib/sapphire-sentinel"
-    SENTINEL_STATE_DIR="${SENTINEL_DATA_DIR}/state"
+    SENTINEL_MAIN_LOG="${SENTINEL_LOG_DIR}/sentinel.log"
+    SENTINEL_ACTIVE_SESSION_FILE="${SENTINEL_STATE_DIR}/active_session"
     SENTINEL_SESSION_ARCHIVE_DIR="${SENTINEL_STATE_DIR}/sessions"
-
-    sentinel_config_init_file
-    SENTINEL_STORAGE_ROOT="${SENTINEL_DATA_DIR}"
-    sentinel_storage_root_override="$(sentinel_config_get storage_root 2>/dev/null || true)"
-    if [[ -n "${sentinel_storage_root_override:-}" ]]; then
-        SENTINEL_STORAGE_ROOT="${sentinel_storage_root_override}"
-    fi
 fi
 
 # ----------------------------------------------------------------------------
-# Canonical files
+# Common helpers
 # ----------------------------------------------------------------------------
-SENTINEL_ACTIVE_SESSION_FILE="${SENTINEL_STATE_DIR}/active_session"
-SENTINEL_ACTIVE_HISTORY_FILE="${SENTINEL_STATE_DIR}/active_session.history"
-SENTINEL_CANONICAL_LOG_FILE="${SENTINEL_LOG_DIR}/sentinel.log"
-
-# ----------------------------------------------------------------------------
-# Compatibility aliases
-# ----------------------------------------------------------------------------
-SENTINEL_SESSION_STATE_FILE="${SENTINEL_ACTIVE_SESSION_FILE}"
-SENTINEL_SESSION_HISTORY_FILE="${SENTINEL_ACTIVE_HISTORY_FILE}"
-SENTINEL_LOG_FILE="${SENTINEL_CANONICAL_LOG_FILE}"
-
-# Older beta names still referenced in engine scripts
-SENTINEL_MAIN_LOG="${SENTINEL_CANONICAL_LOG_FILE}"
-SENTINEL_STATE_FILE="${SENTINEL_ACTIVE_SESSION_FILE}"
-SENTINEL_HISTORY_FILE="${SENTINEL_ACTIVE_HISTORY_FILE}"
-SENTINEL_SESSIONS_DIR="${SENTINEL_SESSION_ARCHIVE_DIR}"
-
-# ----------------------------------------------------------------------------
-# Directory bootstrap
-# ----------------------------------------------------------------------------
-sentinel_ensure_paths() {
-    mkdir -p \
-        "${SENTINEL_CONFIG_DIR}" \
-        "${SENTINEL_LOG_DIR}" \
-        "${SENTINEL_STATE_DIR}" \
-        "${SENTINEL_SESSION_ARCHIVE_DIR}"
-}
-
-# Legacy helper name expected by older scripts
 sentinel_ensure_directories() {
-    sentinel_ensure_paths
+    mkdir -p \
+        "$SENTINEL_ENGINE_DIR" \
+        "$SENTINEL_LIB_SHARED_DIR" \
+        "$SENTINEL_CONFIG_DIR" \
+        "$SENTINEL_DOCS_DIR" \
+        "$SENTINEL_STATE_DIR" \
+        "$SENTINEL_RUNTIME_DIR" \
+        "$SENTINEL_LOG_DIR" \
+        "$SENTINEL_SESSION_ARCHIVE_DIR"
 }
 
-# ----------------------------------------------------------------------------
-# Exported variables
-# ----------------------------------------------------------------------------
-export SENTINEL_LAYOUT_MODE
-export SENTINEL_MODE
-export SENTINEL_LIB_DIR
-export SENTINEL_BASE_DIR
-export SENTINEL_BIN_DIR
-export SENTINEL_ENGINE_DIR
-export SENTINEL_LIB_SHARED_DIR
-export SENTINEL_CONFIG_DIR
-export SENTINEL_DOCS_DIR
-export SENTINEL_LOG_DIR
-export SENTINEL_DATA_DIR
-export SENTINEL_STATE_DIR
-export SENTINEL_SESSION_ARCHIVE_DIR
-export SENTINEL_STORAGE_ROOT
-
-export SENTINEL_ACTIVE_SESSION_FILE
-export SENTINEL_ACTIVE_HISTORY_FILE
-export SENTINEL_CANONICAL_LOG_FILE
-
-export SENTINEL_SESSION_STATE_FILE
-export SENTINEL_SESSION_HISTORY_FILE
-export SENTINEL_LOG_FILE
-
-export SENTINEL_MAIN_LOG
-export SENTINEL_STATE_FILE
-export SENTINEL_HISTORY_FILE
-export SENTINEL_SESSIONS_DIR
-
-# ----------------------------------------------------------------------------
-# Runtime compatibility (legacy engine support)
-# ----------------------------------------------------------------------------
-# Older engine scripts expect a runtime directory.
-# In v3 architecture, runtime == state layer.
-SENTINEL_RUNTIME_DIR="${SENTINEL_STATE_DIR}"
-
-export SENTINEL_RUNTIME_DIR
+sentinel_debug_paths() {
+    cat <<EOF_PATHS
+SENTINEL_MODE=${SENTINEL_MODE}
+SENTINEL_PROJECT_ROOT=${SENTINEL_PROJECT_ROOT}
+SENTINEL_STORAGE_ROOT=${SENTINEL_STORAGE_ROOT}
+SENTINEL_BIN_DIR=${SENTINEL_BIN_DIR}
+SENTINEL_APP_DIR=${SENTINEL_APP_DIR}
+SENTINEL_ENGINE_DIR=${SENTINEL_ENGINE_DIR}
+SENTINEL_LIB_SHARED_DIR=${SENTINEL_LIB_SHARED_DIR}
+SENTINEL_CONFIG_DIR=${SENTINEL_CONFIG_DIR}
+SENTINEL_DOCS_DIR=${SENTINEL_DOCS_DIR}
+SENTINEL_STATE_DIR=${SENTINEL_STATE_DIR}
+SENTINEL_RUNTIME_DIR=${SENTINEL_RUNTIME_DIR}
+SENTINEL_LOG_DIR=${SENTINEL_LOG_DIR}
+SENTINEL_MAIN_LOG=${SENTINEL_MAIN_LOG}
+SENTINEL_ACTIVE_SESSION_FILE=${SENTINEL_ACTIVE_SESSION_FILE}
+SENTINEL_SESSION_ARCHIVE_DIR=${SENTINEL_SESSION_ARCHIVE_DIR}
+EOF_PATHS
+}

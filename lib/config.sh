@@ -27,10 +27,13 @@ sentinel_config_init_file() {
     if [[ ! -f "$(sentinel_config_file)" ]]; then
         cat > "$(sentinel_config_file)" <<'CFG'
 # Sapphire Sentinel user config
-initialized=no
-install_profile=
+initialized=false
+install_type=
 prompt_style=guided
 storage_root=
+feature_context_reminders=enabled
+feature_session_notes=enabled
+feature_reports=enabled
 CFG
     fi
 }
@@ -79,5 +82,5 @@ sentinel_config_set() {
 }
 
 sentinel_config_is_initialized() {
-    [[ "$(sentinel_config_get initialized 2>/dev/null)" == "yes" ]]
+    [[ "$(sentinel_config_get initialized 2>/dev/null)" == "true" ]]
 }
