@@ -12,10 +12,33 @@ source "${PROJECT_ROOT}/lib/session.sh"
 source "${PROJECT_ROOT}/lib/history.sh"
 source "${PROJECT_ROOT}/lib/detection.sh"
 
-CONFIG_FILE="${SENTINEL_CONFIG_DIR}/sentinel.conf"
+if [[ -f "${PROJECT_ROOT}/lib/config.sh" ]]; then
+    # shellcheck source=../lib/config.sh
+    source "${PROJECT_ROOT}/lib/config.sh"
+fi
+
+CONFIG_DIR="${HOME}/.config/sapphire-sentinel"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+config_initialized() {
+    [[ -f "${CONFIG_FILE}" ]] || return 1
+    grep -Eq '^initialized="?true"?$' "${CONFIG_FILE}" 2>/dev/null
+}
+
+require_initialization() {
+    if config_initialized; then
+        return 0
+    fi
+
+    sentinel_warn "Sapphire Sentinel has not been initialized yet."
+    echo "Run: sentinel init"
+    exit 1
+}
 
 sentinel_ensure_directories
 touch "${SENTINEL_MAIN_LOG}"
+
+require_initialization
 
 if [[ -f "${SENTINEL_ACTIVE_SESSION_FILE}" ]]; then
     sentinel_warn "A Sentinel session is already active."
@@ -38,6 +61,7 @@ if [[ $# -ge 1 ]]; then
         project|ticket|label|none)
             CONTEXT_TYPE="$1"
             shift || true
+
             if [[ "${CONTEXT_TYPE}" == "none" ]]; then
                 CONTEXT_VALUE=""
             else
@@ -74,19 +98,12 @@ recovery_reason=$(printf '%q' "${RECOVERY_REASON}")
 integrity_status=$(printf '%q' "${INTEGRITY_STATUS}")
 SESSION
 
-RUNTIME_FILE="${SENTINEL_RUNTIME_DIR}/${SESSION_ID}.session"
-cp "${SENTINEL_ACTIVE_SESSION_FILE}" "${RUNTIME_FILE}"
-
-sentinel_log_event \
-    "session" \
-    "start" \
-    "${SESSION_ID}" \
-    "success" \
-    "mode=${SESSION_MODE};context_type=${CONTEXT_TYPE};context_value=${CONTEXT_VALUE};host=${HOST_NAME};user=${OPERATOR_USER}"
+sentinel_log_event "session" "start" "${SESSION_ID}" "active" \
+    "mode=${SESSION_MODE};context_type=${CONTEXT_TYPE};context_value=${CONTEXT_VALUE}"
 
 sentinel_info "Started new Sentinel session."
 echo "Session ID: ${SESSION_ID}"
 echo "Mode: ${SESSION_MODE}"
 echo "Context Type: ${CONTEXT_TYPE}"
-echo "Context Value: ${CONTEXT_VALUE:-none}"
+echo "Context Value: ${CONTEXT_VALUE}"
 echo "State file: ${SENTINEL_ACTIVE_SESSION_FILE}"
