@@ -12,23 +12,6 @@ if [[ -f "${PROJECT_ROOT}/lib/config.sh" ]]; then
     source "${PROJECT_ROOT}/lib/config.sh"
 fi
 
-CONFIG_DIR="${HOME}/.config/sapphire-sentinel"
-CONFIG_FILE="${CONFIG_DIR}/config"
-
-config_initialized() {
-    [[ -f "${CONFIG_FILE}" ]] || return 1
-    grep -Eq '^initialized="?true"?$' "${CONFIG_FILE}" 2>/dev/null
-}
-
-require_initialization() {
-    if config_initialized; then
-        return 0
-    fi
-
-    sentinel_warn "Sapphire Sentinel has not been initialized yet."
-    echo "Run: sentinel init"
-    exit 1
-}
 
 source "${PROJECT_ROOT}/lib/session.sh"
 
@@ -37,7 +20,7 @@ OPTION="${1:---last}"
 sentinel_ensure_directories
 touch "${SENTINEL_MAIN_LOG}"
 
-require_initialization
+sentinel_require_initialization
 
 list_session_files() {
     if [[ ! -d "${SENTINEL_SESSION_ARCHIVE_DIR}" ]]; then

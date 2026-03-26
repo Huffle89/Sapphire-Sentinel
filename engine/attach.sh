@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-source "${PROJECT_ROOT}/lib/paths.sh"
-
 set -u
 
 ENGINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,6 +10,16 @@ source "${PROJECT_ROOT}/lib/output.sh"
 source "${PROJECT_ROOT}/lib/logging.sh"
 source "${PROJECT_ROOT}/lib/session.sh"
 source "${PROJECT_ROOT}/lib/history.sh"
+
+if [[ -f "${PROJECT_ROOT}/lib/config.sh" ]]; then
+    # shellcheck source=../lib/config.sh
+    source "${PROJECT_ROOT}/lib/config.sh"
+fi
+
+sentinel_ensure_directories
+touch "${SENTINEL_MAIN_LOG}"
+
+sentinel_require_initialization
 
 CONTEXT_TYPE="${1:-}"
 CONTEXT_VALUE="${2:-}"
@@ -29,11 +35,11 @@ if ! sentinel_load_session_file "${SENTINEL_ACTIVE_SESSION_FILE}"; then
 fi
 
 case "${CONTEXT_TYPE}" in
-    project|ticket|label)
+    project|ticket|classwork|label)
         ;;
     *)
         sentinel_error "Invalid context type."
-        sentinel_error "Allowed: project, ticket, label"
+        sentinel_error "Allowed: project, ticket, classwork, label"
         exit 1
         ;;
 esac

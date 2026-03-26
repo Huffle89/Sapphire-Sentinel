@@ -10,12 +10,19 @@ source "${PROJECT_ROOT}/lib/output.sh"
 source "${PROJECT_ROOT}/lib/logging.sh"
 source "${PROJECT_ROOT}/lib/session.sh"
 
+if [[ -f "${PROJECT_ROOT}/lib/config.sh" ]]; then
+    # shellcheck source=../lib/config.sh
+    source "${PROJECT_ROOT}/lib/config.sh"
+fi
+
 SIGNAL_TYPE="${1:-}"
 shift || true
 SIGNAL_DETAILS="${*:-}"
 
 sentinel_ensure_directories
 touch "${SENTINEL_MAIN_LOG}"
+
+sentinel_require_initialization
 
 case "${SIGNAL_TYPE}" in
     command|error|note)

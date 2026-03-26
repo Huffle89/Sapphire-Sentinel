@@ -24,11 +24,13 @@ show_help() {
     echo "Sapphire Sentinel"
     echo "Usage:"
     echo "  sentinel init"
+    echo "  sentinel config"
     echo "  sentinel start [mode] [context_type] [context_value]"
     echo "  sentinel attach [context_type] [context_value]"
     echo "  sentinel signal [command|error|note] [details]"
     echo "  sentinel stop"
     echo "  sentinel status"
+    echo "  sentinel session [--last|--today]"
     echo "  sentinel sessions [--last|--today]"
     echo "  sentinel story [--last|session_id]"
     echo "  sentinel report day"
@@ -57,6 +59,9 @@ case "$COMMAND" in
     init)
         run_engine "init.sh"
         ;;
+    config)
+        run_engine "config.sh"
+        ;;
     start)
         shift || true
         run_engine "start.sh" "$@"
@@ -75,7 +80,7 @@ case "$COMMAND" in
     status)
         run_engine "status.sh"
         ;;
-    sessions)
+    session|sessions)
         shift || true
         run_engine "sessions.sh" "$@"
         ;;

@@ -84,3 +84,13 @@ sentinel_config_set() {
 sentinel_config_is_initialized() {
     [[ "$(sentinel_config_get initialized 2>/dev/null)" == "true" ]]
 }
+
+sentinel_require_initialization() {
+    if sentinel_config_is_initialized; then
+        return 0
+    fi
+
+    sentinel_warn "Sapphire Sentinel has not been initialized yet."
+    echo "Run: sentinel init"
+    exit 1
+}

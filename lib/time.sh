@@ -5,6 +5,10 @@
 # Shared time and duration helpers
 # ============================================================================
 
+sentinel_timestamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
 sentinel_epoch() {
     date +%s
 }

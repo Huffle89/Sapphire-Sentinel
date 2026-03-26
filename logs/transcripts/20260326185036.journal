@@ -1,0 +1,29 @@
+[2026-03-26 18:50:36] command: sentinel start
+[2026-03-26 18:50:36] exit: 0
+[2026-03-26 18:50:40] command: pwd
+[2026-03-26 18:50:40] exit: 0
+[2026-03-26 18:50:43] command: whoami
+[2026-03-26 18:50:43] exit: 0
+[2026-03-26 18:50:47] command: notacommand
+[2026-03-26 18:50:47] exit: 127
+[2026-03-26 18:50:54] command: sentinel stop
+[2026-03-26 18:50:54] exit: 1
+[2026-03-26 18:53:44] command: chmod +x engine/stop.sh && bash -n engine/stop.sh
+[2026-03-26 18:53:44] exit: 0
+[2026-03-26 18:53:59] command: sentinel start
+[2026-03-26 18:53:59] exit: 1
+[2026-03-26 18:54:08] command: pwd
+[2026-03-26 18:54:08] exit: 0
+[2026-03-26 18:54:11] command: whoami
+[2026-03-26 18:54:11] exit: 0
+[2026-03-26 18:54:15] command: notacommand
+[2026-03-26 18:54:15] exit: 127
+[2026-03-26 18:54:19] command: sentinel stop
+[2026-03-26 18:54:19] exit: 1
+[2026-03-26 18:54:46] command: sentinel status
+[2026-03-26 18:54:46] exit: 0
+[2026-03-26 18:56:56] command: cd ~/Desktop/projects/Sapphire-Sentinel-Rebuild && nl -ba engine/stop.sh | sed -n '1,180p'
+[2026-03-26 18:56:56] exit: 0
+Ended: 2026-03-26 19:01:52
+Duration: 11m 16s
+========================================

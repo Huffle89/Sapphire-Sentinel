@@ -1,0 +1,18 @@
+[] command: sentinel start
+[] exit: 0
+[2026-03-26 18:04:11] command: exit
+[2026-03-26 18:04:11] exit: 0
+[2026-03-26 18:04:16] command: cd
+[2026-03-26 18:04:16] exit: 0
+[2026-03-26 18:04:20] command: sentinel start
+[2026-03-26 18:04:20] exit: 1
+[2026-03-26 18:04:29] command: sentinel status
+[2026-03-26 18:04:29] exit: 0
+[2026-03-26 18:05:00] command: type sentinel_timestamp
+[2026-03-26 18:05:00] exit: 0
+[2026-03-26 18:05:06] command: setinel start
+[2026-03-26 18:05:06] exit: 127
+[2026-03-26 18:05:11] command: sentinel start
+[2026-03-26 18:05:11] exit: 1
+[2026-03-26 18:05:16] command: sentinel status
+[2026-03-26 18:05:16] exit: 0

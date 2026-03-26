@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+
+[[ $- != *i* ]] && return 0
+
+if [[ -n "${SENTINEL_SHELL_LOGGER_LOADED:-}" ]]; then
+    return 0
+fi
+export SENTINEL_SHELL_LOGGER_LOADED=1
+
+SENTINEL_LOGGER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+source "${SENTINEL_LOGGER_ROOT}/lib/paths.sh"
+source "${SENTINEL_LOGGER_ROOT}/lib/logging.sh"
+source "${SENTINEL_LOGGER_ROOT}/lib/session.sh"
+source "${SENTINEL_LOGGER_ROOT}/lib/time.sh"
+
+sentinel_shell_logger_load_active() {
+    [[ -f "${SENTINEL_ACTIVE_SESSION_FILE}" ]] || return 1
+    sentinel_load_session_file "${SENTINEL_ACTIVE_SESSION_FILE}"
+}
+
+sentinel_shell_logger_transcript_file() {
+    printf '%s\n' "${SENTINEL_LOG_DIR}/transcripts/${session_id}.journal"
+}
+
+sentinel_shell_logger_init_transcript() {
+    local file
+    file="$(sentinel_shell_logger_transcript_file)"
+    mkdir -p "$(dirname "$file")"
+
+    if [[ ! -f "$file" ]]; then
+        {
+            echo "========================================"
+            echo "Sapphire Sentinel Session Transcript"
+            echo "========================================"
+            echo "Session ID: ${session_id}"
+            echo "Mode: ${session_mode}"
+            if [[ -z "${context_type:-}" || "${context_type}" == "none" ]]; then
+                echo "Context: none"
+            else
+                echo "Context: ${context_type}: ${context_value}"
+            fi
+            echo "Label: ${label:-none}"
+            echo "Started: ${start_time}"
+            echo "Host: ${host_name}"
+            echo "User: ${operator_user}"
+            echo "========================================"
+            echo
+        } >> "$file"
+    fi
+}
+
+sentinel_shell_logger_postcmd() {
+    local exit_code=$?
+    local cmd line histnum file timestamp cwd
+
+    [[ $- != *i* ]] && return "$exit_code"
+
+    history -a >/dev/null 2>&1 || true
+
+    if sentinel_shell_logger_load_active; then
+        line="$(HISTTIMEFORMAT= history 1)"
+        histnum="$(sed -E 's/^[[:space:]]*([0-9]+).*/\1/' <<< "$line")"
+        cmd="$(sed -E 's/^[[:space:]]*[0-9]+[[:space:]]*//' <<< "$line")"
+
+        if [[ -n "$cmd" && "$histnum" != "${SENTINEL_SHELL_LOGGER_LAST_HISTNUM:-}" ]]; then
+            export SENTINEL_SHELL_LOGGER_LAST_HISTNUM="$histnum"
+
+            sentinel_log_event \
+                "${session_mode}" \
+                "signal_command" \
+                "${session_id}" \
+                "$([[ $exit_code -eq 0 ]] && echo success || echo failed)" \
+                "exit_code=${exit_code};command=${cmd}"
+
+            if [[ $exit_code -ne 0 ]]; then
+                sentinel_log_event \
+                    "${session_mode}" \
+                    "signal_error" \
+                    "${session_id}" \
+                    "failed" \
+                    "exit_code=${exit_code};command=${cmd}"
+            fi
+
+            # Transcript
+            sentinel_shell_logger_init_transcript
+            file="$(sentinel_shell_logger_transcript_file)"
+            timestamp="$(sentinel_timestamp)"
+            cwd="${PWD}"
+
+            {
+                printf '[%s] command #%s\n' "$timestamp" "$histnum"
+                printf '  cwd: %s\n' "$cwd"
+                printf '  run: %s\n' "$cmd"
+                printf '  exit: %s (%s)\n' "$exit_code" "$([[ $exit_code -eq 0 ]] && echo success || echo failed)"
+                printf '\n'
+            } >> "$file"
+        fi
+    fi
+
+    return "$exit_code"
+}
+
+PROMPT_COMMAND="sentinel_shell_logger_postcmd${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+export PROMPT_COMMAND

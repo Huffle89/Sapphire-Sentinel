@@ -5,6 +5,10 @@
 # Canonical structured logging helpers
 # ============================================================================
 
+sentinel_timestamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
 sentinel_log_write() {
     local timestamp="$1"
     local mode="$2"
