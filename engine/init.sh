@@ -28,6 +28,10 @@ feature_context_reminders=""
 feature_session_notes=""
 feature_reports=""
 
+detected_native_package_manager="none"
+detected_flatpak="false"
+detected_snap="false"
+
 changes_made="no"
 feature_toggle_result=""
 
@@ -54,6 +58,34 @@ pause_continue() {
 config_initialized() {
     [[ -f "${CONFIG_FILE}" ]] || return 1
     grep -Eq '^initialized="?true"?$' "${CONFIG_FILE}" 2>/dev/null
+}
+
+has_cmd() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+detect_package_managers() {
+    detected_native_package_manager="none"
+    detected_flatpak="false"
+    detected_snap="false"
+
+    if has_cmd apt-get; then
+        detected_native_package_manager="apt"
+    elif has_cmd dnf; then
+        detected_native_package_manager="dnf"
+    elif has_cmd pacman; then
+        detected_native_package_manager="pacman"
+    elif has_cmd zypper; then
+        detected_native_package_manager="zypper"
+    fi
+
+    if has_cmd flatpak; then
+        detected_flatpak="true"
+    fi
+
+    if has_cmd snap; then
+        detected_snap="true"
+    fi
 }
 
 prompt_yes_no() {
@@ -128,6 +160,9 @@ reset_init_choices() {
     feature_context_reminders=""
     feature_session_notes=""
     feature_reports=""
+    detected_native_package_manager="none"
+    detected_flatpak="false"
+    detected_snap="false"
     changes_made="no"
     feature_toggle_result=""
 }
@@ -512,16 +547,23 @@ run_custom_setup() {
 show_summary() {
     local choice=""
 
+    detect_package_managers
+
     while true; do
         print_header
         echo "Review your setup choices"
         echo
-        echo "Install type:        ${init_mode_choice}"
-        echo "Prompt style:        ${prompt_style}"
-        echo "Storage location:    ${storage_root}"
-        echo "Context reminders:   ${feature_context_reminders}"
-        echo "Session notes:       ${feature_session_notes}"
-        echo "Reports:             ${feature_reports}"
+        echo "Install type:            ${init_mode_choice}"
+        echo "Prompt style:            ${prompt_style}"
+        echo "Storage location:        ${storage_root}"
+        echo "Context reminders:       ${feature_context_reminders}"
+        echo "Session notes:           ${feature_session_notes}"
+        echo "Reports:                 ${feature_reports}"
+        echo
+        echo "Detected system support:"
+        echo "Native package manager:  ${detected_native_package_manager}"
+        echo "Flatpak detected:        ${detected_flatpak}"
+        echo "Snap detected:           ${detected_snap}"
         echo
         cat <<'TEXT'
 1) Confirm
@@ -575,6 +617,7 @@ ensure_config_dir() {
 
 write_config_file() {
     ensure_config_dir
+    detect_package_managers
 
     cat > "${CONFIG_FILE}" <<EOF_CONFIG
 initialized=true
@@ -584,20 +627,30 @@ storage_root=${storage_root}
 feature_context_reminders=${feature_context_reminders}
 feature_session_notes=${feature_session_notes}
 feature_reports=${feature_reports}
+native_package_manager=${detected_native_package_manager}
+flatpak_detected=${detected_flatpak}
+snap_detected=${detected_snap}
 EOF_CONFIG
 }
 
 show_completion_screen() {
+    detect_package_managers
+
     print_header
     echo "Sapphire Sentinel setup is complete."
     echo
     echo "Saved settings:"
-    echo "Install type:        ${init_mode_choice}"
-    echo "Prompt style:        ${prompt_style}"
-    echo "Storage location:    ${storage_root}"
-    echo "Context reminders:   ${feature_context_reminders}"
-    echo "Session notes:       ${feature_session_notes}"
-    echo "Reports:             ${feature_reports}"
+    echo "Install type:            ${init_mode_choice}"
+    echo "Prompt style:            ${prompt_style}"
+    echo "Storage location:        ${storage_root}"
+    echo "Context reminders:       ${feature_context_reminders}"
+    echo "Session notes:           ${feature_session_notes}"
+    echo "Reports:                 ${feature_reports}"
+    echo
+    echo "Detected system support:"
+    echo "Native package manager:  ${detected_native_package_manager}"
+    echo "Flatpak detected:        ${detected_flatpak}"
+    echo "Snap detected:           ${detected_snap}"
     echo
     echo "Configuration file:"
     echo "${CONFIG_FILE}"
