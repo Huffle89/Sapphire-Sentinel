@@ -22,3 +22,18 @@ config/state/sessions/*.session
 .directory
 .DS_Store
 Thumbs.db
+
+# Sentinel runtime data
+logs/transcripts/
+logs/*.log
+
+# Temporary / backup files
+*.bak
+*.backup
+*.final_backup
+*.final_fix
+
+# Python temp
+*.pyc
+__pycache__/
+

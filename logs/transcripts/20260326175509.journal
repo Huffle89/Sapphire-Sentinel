@@ -1,8 +1,0 @@
-[] command: sentinel start
-[] exit: 0
-[] command: grep -n 'Sapphire Sentinel Rebuild passive shell logger\|shell_logger.sh' ~/.bashrc && echo && echo "===== shell_logger.sh source lines =====" && grep -n 'time.sh\|session.sh\|logging.sh\|paths.sh' ~/Desktop/projects/Sapphire-Sentinel-Rebuild/lib/shell_logger.sh && echo && echo "===== bash syntax check =====" && bash -n ~/Desktop/projects/Sapphire-Sentinel-Rebuild/lib/shell_logger.sh && echo && echo "===== force reload hook =====" && source ~/.bashrc && declare -p PROMPT_COMMAND 2>/dev/null
-[] exit: 0
-[] command: sentinel signal
-[] exit: 1
-[2026-03-26 17:59:29] command: chmod +x lib/time.sh && bash -n lib/time.sh && source ~/.bashrc
-[2026-03-26 17:59:29] exit: 0
