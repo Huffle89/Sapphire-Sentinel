@@ -4,39 +4,35 @@
 
 Sapphire Sentinel is a Linux-first terminal session intelligence platform built by Huffle’s IT Services LLC.
 
-Instead of acting like a simple command logger, Sentinel is designed to help reconstruct and explain real terminal work sessions. It captures session context, records command activity, flags failures, and turns shell work into readable stories and reports.
+Instead of acting like a simple command logger, Sentinel is designed to help reconstruct and explain real work sessions. It captures structured activity, preserves session context, and turns terminal work into readable operational history through session stories and reporting.
 
 ## Current Status
 
-Sapphire Sentinel is currently in **Personal Mode Beta**.
+Sapphire Sentinel is currently in **Personal Mode Beta**, with core functionality implemented and ready for testing.
 
-The current beta focuses on guided session startup, structured session tracking, readable story output, shell-based command logging, and transcript generation for Linux environments.
+This phase focuses on:
+- a clean and guided user experience
+- structured session metadata
+- readable story output
+- shell-based session logging
+- transcript generation
+- stability and usability for real-world workflows
 
-## What Sentinel Does
+## Core Command Style
 
-Sapphire Sentinel helps answer questions like:
-
-- What kind of work happened?
-- What was that work tied to?
-- Which commands were run?
-- Were there failures or notable events?
-- What happened in the session overall?
-
-## Core Commands
+Sentinel is designed around a clean command model:
 
 ```bash
-sentinel init
-sentinel config
-sentinel start
-sentinel stop
-sentinel status
-sentinel story --last
-sentinel story <session_id>
-sentinel session --last
-sentinel sessions --last
-sentinel sessions --today
-sentinel report day
-sentinel report week
-sentinel report month
-sentinel update
-sentinel help
+sentinel init  
+sentinel config  
+sentinel start  
+sentinel stop  
+sentinel status  
+sentinel session  
+sentinel sessions  
+sentinel story  
+sentinel report day  
+sentinel report week  
+sentinel report month  
+sentinel update  
+sentinel help  
