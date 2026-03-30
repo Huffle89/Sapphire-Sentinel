@@ -5,9 +5,13 @@
 Sapphire Sentinel is a Linux-first terminal session intelligence tool that records, reconstructs, and explains your work so you can understand it later without relying on memory.
 
 Sapphire Sentinel is developed and maintained by Christopher Lagasse / Huffle’s IT Services LLC.
-All intellectual property rights to Sapphire Sentinel are owned by Christopher Lagasse and Huffle’s IT Services LLC.
 
-**Status:** Personal Mode Beta (v3)
+---
+
+## Status
+
+**Personal Mode Beta (v3)**
+
 ---
 
 ## What Sentinel Does
@@ -44,10 +48,14 @@ Everything in Personal Mode is built around that rule.
   - label
   - none
 
+---
+
 ### Story Output
 
 - Converts raw terminal activity into readable session narratives
 - Makes past work understandable instead of cryptic
+
+---
 
 ### Reporting
 
@@ -55,6 +63,8 @@ Everything in Personal Mode is built around that rule.
 - `sentinel report week`
 - `sentinel report month`
 - Session summaries with signal counts and highlights
+
+---
 
 ### Logging System
 
@@ -65,11 +75,15 @@ Everything in Personal Mode is built around that rule.
   - notes
 - Clean transcript journaling
 
+---
+
 ### Full Log Access
 
 - No forced deletion
 - Manual cleanup available
 - Complete visibility into your own history
+
+---
 
 ### System Update (Multi-Manager Support)
 
@@ -92,7 +106,7 @@ Sentinel can update multiple package systems in a single run:
 
 ---
 
-## Planned Premium Features (Sapphire Sentinel Insight™)
+## Planned Premium Features (Sentinel Insight™)
 
 Premium expands Sentinel beyond single-session understanding into deeper intelligence:
 
@@ -102,16 +116,22 @@ Premium expands Sentinel beyond single-session understanding into deeper intelli
 - Productivity and error pattern detection
 - Session comparison and scoring
 
+---
+
 ### Search & Memory
 
 - Search across commands, errors, and sessions
 - Advanced filtering and timeline navigation
 
+---
+
 ### Enhanced Story
 
 - Smarter summaries
 - Multi-session narrative linking
-- Problem -> resolution tracking
+- Problem → resolution tracking
+
+---
 
 ### Reporting & Export
 
@@ -119,11 +139,15 @@ Premium expands Sentinel beyond single-session understanding into deeper intelli
 - Client-ready summaries
 - Weekly/monthly digest reports
 
+---
+
 ### Retention & Storage Control
 
 - Auto-clean policies
 - Archive tiers
 - Configurable retention rules
+
+---
 
 ### System Awareness
 
