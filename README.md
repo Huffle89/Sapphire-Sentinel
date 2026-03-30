@@ -6,6 +6,7 @@ Sapphire Sentinel is a Linux-first terminal session intelligence tool that recor
 
 Sapphire Sentinel is developed and maintained by Christopher Lagasse / Huffle’s IT Services LLC.
 
+**Status:** Personal Mode Beta (v3)
 ---
 
 ## What Sentinel Does
