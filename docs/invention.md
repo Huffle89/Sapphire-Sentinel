@@ -1,4 +1,4 @@
-# Sapphire Sentinel — Invention Overview
+# Sapphire Sentinel™ — Invention Overview
 
 ## Author
 Christopher Lagasse  
