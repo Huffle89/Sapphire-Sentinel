@@ -1,4 +1,4 @@
-# Sapphire Sentinel
+# Sapphire Sentinel™
 
 ![Sapphire Sentinel Logo](assets/logo.png)
 
