@@ -4,22 +4,25 @@
 
 Sapphire Sentinel is a Linux-first terminal session intelligence tool that records, reconstructs, and explains your work so you can understand it later without relying on memory.
 
+Sapphire Sentinel is developed and maintained by Christopher Lagasse / Huffle’s IT Services LLC.
+
 ---
 
-## 🧭 What Sentinel Does
+## What Sentinel Does
 
 Sentinel captures your terminal activity and turns it into a clear, readable narrative of what you did.
 
 It is built for:
+
 - developers
 - sysadmins
 - cybersecurity professionals
 - homelab users
-- anyone who works in the terminal and needs to **understand their own work later**
+- anyone who works in the terminal and needs to understand their own work later
 
 ---
 
-## 🌿 Core Philosophy
+## Core Philosophy
 
 > Sentinel should always allow the user to look back at what they did and understand it.
 
@@ -27,9 +30,10 @@ Everything in Personal Mode is built around that rule.
 
 ---
 
-## 🧱 Features (Personal Mode – Free)
+## Features (Personal Mode - Free)
 
-### 🔹 Session Tracking
+### Session Tracking
+
 - Start, stop, and monitor sessions
 - Automatic command capture
 - Context support:
@@ -38,23 +42,20 @@ Everything in Personal Mode is built around that rule.
   - label
   - none
 
----
+### Story Output
 
-### 🔹 Story Output
 - Converts raw terminal activity into readable session narratives
 - Makes past work understandable instead of cryptic
 
----
+### Reporting
 
-### 🔹 Reporting
 - `sentinel report day`
 - `sentinel report week`
 - `sentinel report month`
 - Session summaries with signal counts and highlights
 
----
+### Logging System
 
-### 🔹 Logging System
 - Passive shell logging
 - Structured event tracking:
   - commands
@@ -62,16 +63,14 @@ Everything in Personal Mode is built around that rule.
   - notes
 - Clean transcript journaling
 
----
+### Full Log Access
 
-### 🔹 Full Log Access
 - No forced deletion
 - Manual cleanup available
 - Complete visibility into your own history
 
----
+### System Update (Multi-Manager Support)
 
-### 🔹 System Update (Multi-Manager Support)
 Sentinel can update multiple package systems in a single run:
 
 - APT (Debian / Ubuntu / KDE Neon / Mint)
@@ -82,6 +81,7 @@ Sentinel can update multiple package systems in a single run:
 - Snap
 
 **Behavior:**
+
 - Detects supported package managers on the system
 - Updates all supported managers in one run
 - Skips missing managers without error
@@ -90,52 +90,48 @@ Sentinel can update multiple package systems in a single run:
 
 ---
 
-## 💎 Planned Premium Features (Sentinel Insight)
+## Planned Premium Features (Sentinel Insight)
 
 Premium expands Sentinel beyond single-session understanding into deeper intelligence:
 
-### 🧠 Insight & Analytics
+### Insight & Analytics
+
 - Cross-session trend analysis
 - Productivity and error pattern detection
 - Session comparison and scoring
 
----
+### Search & Memory
 
-### 🔍 Search & Memory
 - Search across commands, errors, and sessions
 - Advanced filtering and timeline navigation
 
----
+### Enhanced Story
 
-### 📖 Enhanced Story
 - Smarter summaries
 - Multi-session narrative linking
-- Problem → resolution tracking
+- Problem -> resolution tracking
 
----
+### Reporting & Export
 
-### 📊 Reporting & Export
 - Clean export (text / markdown)
 - Client-ready summaries
 - Weekly/monthly digest reports
 
----
+### Retention & Storage Control
 
-### 📦 Retention & Storage Control
 - Auto-clean policies
 - Archive tiers
 - Configurable retention rules
 
----
+### System Awareness
 
-### 🌐 System Awareness
 - Detect installs outside the terminal
 - Track GUI package manager activity
 - Correlate system changes with sessions
 
 ---
 
-## 🖥️ Installation (Current)
+## Installation (Current)
 
 Clone the repository:
 
