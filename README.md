@@ -92,7 +92,7 @@ Sentinel can update multiple package systems in a single run:
 
 ---
 
-## Planned Premium Features (Sentinel Insight)
+## Planned Premium Features (Sapphire Sentinel Insight™)
 
 Premium expands Sentinel beyond single-session understanding into deeper intelligence:
 
