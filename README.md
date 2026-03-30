@@ -1,6 +1,6 @@
 # Sapphire Sentinel™
 
-![Sapphire Sentinel Logo](assets/logo.png)
+![Sapphire Sentinel Logo](assets/sentinel-logo.png)
 
 Sapphire Sentinel is a Linux-first terminal session intelligence tool that records, reconstructs, and explains your work so you can understand it later without relying on memory.
 
